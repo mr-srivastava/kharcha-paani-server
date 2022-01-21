@@ -1,5 +1,4 @@
 const express = require('express');
-const path = require('path');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config({ path: '.env' });
@@ -7,7 +6,8 @@ require('dotenv').config({ path: '.env' });
 const groupRouter = require('./routes/group');
 
 // connect to DB
-mongoose.connect(process.env.MONGO_URI, {
+const MONGO_URI = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@kharcha-paani-db.73dmr.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
