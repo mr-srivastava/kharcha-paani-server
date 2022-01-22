@@ -18,36 +18,13 @@ mongoose.connection.on('error', (err) => {
 
 const app = express();
 const port = process.env.PORT || 5000;
-const whitelist = process.env.CORS_WHITELIST;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     if (whitelist.indexOf(origin) !== -1 || !origin) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-// };
-// app.use(cors(corsOptions));
-
 //Listen
 app.listen(port, () => console.log(`Listening on Port ${port}`));
-
-//serve react
-// if (process.env.NODE_ENV === 'production') {
-//   //Serve any static file
-//   app.use(express.static(path.join(__dirname, 'client/build')));
-
-//   //Handle react route and return all requests to react
-//   app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-//   });
-// }
 
 app.use('/api/group', groupRouter);
 

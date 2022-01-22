@@ -44,8 +44,8 @@ exports.updateGroup = async (req, res) => {
   try {
     const id = mongoose.Types.ObjectId(req.params);
     const { body } = req;
-    const group = await Group.findOneAndUpdate({ _id: id }, body);
-    return res.status(200).json(group);
+    await Group.findOneAndUpdate({ _id: id }, body);
+    return res.status(200).json({ id });
   } catch (error) {
     return res.status(400).json({
       message: error.message,
