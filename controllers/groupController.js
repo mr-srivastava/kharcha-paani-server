@@ -52,3 +52,15 @@ exports.updateGroup = async (req, res) => {
     });
   }
 };
+
+exports.deleteGroup = async (req, res) => {
+  try {
+    const id = mongoose.Types.ObjectId(req.params);
+    await Group.deleteOne({ _id: id });
+    return res.status(200).json({ id });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
