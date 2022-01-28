@@ -1,66 +1,74 @@
-const mongoose = require('mongoose');
+const e = require('express');
+const { sumBy } = require('lodash');
+var mongoose = require('mongoose');
 const Group = require('../models/group');
+const expenseController = require('./expenseController');
 
-exports.createGroup = async (req, res) => {
-  try {
-    const { body } = req;
-    const group = await Group.create(body);
-    return res.status(200).json({
-      id: group._id,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-    });
-  }
+exports.getAll = async () => {
+  return Group.find();
 };
 
-exports.getGroups = async (req, res) => {
-  try {
-    const groups = await Group.find();
-    return res.status(200).json({
-      groups,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-    });
-  }
+exports.create = async (group) => {
+  return Group.create(group);
 };
 
-exports.getGroupById = async (req, res) => {
-  try {
-    const id = mongoose.Types.ObjectId(req.params);
-    const [group] = await Group.find({ _id: id });
-    return res.status(200).json(group);
-  } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-    });
-  }
+exports.getById = async (id) => {
+  return Group.find({ _id: id });
 };
 
-exports.updateGroup = async (req, res) => {
-  try {
-    const id = mongoose.Types.ObjectId(req.params);
-    const { body } = req;
-    await Group.findOneAndUpdate({ _id: id }, body);
-    return res.status(200).json({ id });
-  } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-    });
-  }
+exports.getExpensesById = async (id) => {
+  const expenses = await expenseController.getByGroupId(id);
+  const total = sumBy(expenses, (e) => e.amount);
+  return { expenses, total };
 };
 
-exports.deleteGroup = async (req, res) => {
-  try {
-    const id = mongoose.Types.ObjectId(req.params);
-    await Group.deleteOne({ _id: id });
-    return res.status(200).json({ id });
-  } catch (error) {
-    return res.status(400).json({
-      message: error.message,
-    });
-  }
+exports.update = async (id, body) => {
+  await Group.findOneAndUpdate({ _id: id }, body);
+  return id;
+};
+
+exports.delete = async (id) => {
+  return Group.deleteOne({ _id: id });
+};
+
+exports.addContribution = async (expense) => {
+  const { groupId: id, amount, paidBy, sharedBy } = expense;
+  const paidArr = paidBy.map(mongoose.Types.ObjectId);
+  const sharedArr = sharedBy.map(mongoose.Types.ObjectId);
+  const { members } = await Group.findById(id, { members: 1 });
+  const paidContri = amount / paidArr.length;
+  const shareContri = amount / sharedArr.length;
+
+  const updatedMem = members.map((mem) => {
+    if (paidArr.some((el) => el.equals(mem._id))) {
+      mem.paid += paidContri;
+    }
+    if (sharedArr.some((el) => el.equals(mem._id))) {
+      mem.share += shareContri;
+    }
+    return mem;
+  });
+
+  return this.update(id, { members: updatedMem });
+};
+
+exports.removeContribution = async (expense) => {
+  const { groupId: id, amount, paidBy, sharedBy } = expense;
+  const paidArr = paidBy.map(mongoose.Types.ObjectId);
+  const sharedArr = sharedBy.map(mongoose.Types.ObjectId);
+  const { members } = await Group.findById(id, { members: 1 });
+  const paidContri = amount / paidArr.length;
+  const shareContri = amount / sharedArr.length;
+
+  const updatedMem = members.map((mem) => {
+    if (paidArr.some((el) => el.equals(mem._id))) {
+      mem.paid -= paidContri;
+    }
+    if (sharedArr.some((el) => el.equals(mem._id))) {
+      mem.share -= shareContri;
+    }
+    return mem;
+  });
+
+  return this.update(id, { members: updatedMem });
 };

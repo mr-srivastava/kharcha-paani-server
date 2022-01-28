@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const { Schema, model } = require('mongoose');
 
-const memberSchema = new mongoose.Schema({
+const memberSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -17,12 +17,17 @@ const memberSchema = new mongoose.Schema({
   },
 });
 
-const groupSchema = new mongoose.Schema({
+const groupSchema = new Schema({
   name: {
     type: String,
     required: true,
   },
-  members: [memberSchema],
+  members: {
+    type: [memberSchema],
+    ref: 'Group',
+    required: true,
+    validate: (v) => Array.isArray(v) && v.length > 0,
+  },
 });
 
-module.exports = mongoose.model('Group', groupSchema);
+module.exports = model('Group', groupSchema);

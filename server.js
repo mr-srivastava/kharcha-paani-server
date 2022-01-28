@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 require('dotenv').config({ path: '.env' });
 
 const groupRouter = require('./routes/group');
+const expenseRouter = require('./routes/expense');
 
 // connect to DB
 const MONGO_URI = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@kharcha-paani-db.73dmr.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -27,6 +28,7 @@ app.use(cors());
 app.listen(port, () => console.log(`Listening on Port ${port}`));
 
 app.use('/api/group', groupRouter);
+app.use('/api/expense', expenseRouter);
 
 // Get Route
 app.get('/api', (req, res) => {
